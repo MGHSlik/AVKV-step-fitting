@@ -2,10 +2,59 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy.interpolate import interp1d
-import sys
 import allantools
-sys.path.append(r'W:\staff-groups\tnw\bn\mea\Shared\Pang Yen Wang\4. Python code')
-from FtsH_utils import *
+
+def sqrt_dist(arr):
+    return np.sqrt(np.sum(arr**2, axis=1))
+
+def resampling_avg(data, fs, fr):
+    """
+    Resampling to a lower frequency by averaging over a window.
+    Args:
+        data (np.ndarray): Input data, shape (n,) or (n, m).
+        fs (float): Original sampling frequency.
+        fr (float): Desired resampling frequency.
+
+    Returns:
+        resampled_t (np.ndarray): Time vector for resampled data (centers of bins).
+        resampled_data (np.ndarray): Resampled data.
+    """
+    # 1. Input validation and setup
+    data = np.asarray(data)
+    if fs / fr < 1:
+        raise ValueError(f"Resampling frequency ({fr}) must be lower than sampling frequency ({fs}).")
+    
+    window = int(fs / fr)
+    if window == 0: 
+        window = 1
+
+    # 2. Determine shapes
+    # Calculate how many full bins fit into the data
+    n_bins = data.shape[0] // window
+    cutoff = n_bins * window  # Discard remainder data that doesn't fit a full window
+
+    # 3. Reshape and Mean (The "Magic" Step)
+    # We fold the array so that every 'window' rows become 1 row with an extra dimension
+    if data.ndim == 1:
+        # 1D Case: (N,) -> (N_bins, Window) -> Mean over axis 1
+        reshaped = data[:cutoff].reshape(n_bins, window)
+        resampled_data = reshaped.mean(axis=1)
+    else:
+        # 2D Case: (N, M) -> (N_bins, Window, M) -> Mean over axis 1
+        reshaped = data[:cutoff].reshape(n_bins, window, data.shape[1])
+        resampled_data = reshaped.mean(axis=1)
+
+    # 4. Generate Time Vector
+    # We calculate the center time of each bin mathematically to avoid creating large arrays
+    # dt_new is the duration of one downsampled point
+    dt_new = window / fs 
+    # The first point is at half the window duration
+    start_t = dt_new / 2.0 
+    
+    # Generate linearly spaced time points
+    resampled_t = np.arange(n_bins) * dt_new + start_t
+
+    return resampled_t, resampled_data
 
 def calc_sic(n_points, total_variance, n_steps):
     """
