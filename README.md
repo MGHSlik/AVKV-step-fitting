@@ -11,8 +11,9 @@ The algorithm combines **Allan Variance (AV)**, to determine optimal noise filte
 ## Key Features
 
 *   **Automated Bandwidth Selection:** Uses Allan Variance to objectively calculate the optimal sampling frequency, balancing temporal resolution against thermal noise.
-*   **Adaptive Downsampling:** Automatically downsamples experimental data to the calculated optimal bandwidth without manual intervention.
+*   **Adaptive Downsampling:** Experimental data can be downsampled to the calculated optimal averaging window from the calcualted bandwidth.
 *   **Robust Step Fitting:** Implements the Kalafut-Visscher algorithm to detect steps and dwells without requiring prior knowledge of the number of states.
+*   **Analysis & Visualisation Tools** Includes a script which pools multiple fit results and analyses the pooled results, building multiple plots.
 *   **Benchmarking Tools:** Includes scripts to compare AVKV performance against standard KV methods (AVKV_vs_KV_comparison.py).
 *   **Pure Python:** No dependency on LabVIEW or proprietary commercial licenses.
 
